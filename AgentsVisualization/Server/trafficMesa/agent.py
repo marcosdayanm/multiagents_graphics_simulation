@@ -3,14 +3,23 @@ from mesa import Agent
 class Car(Agent):
     def __init__(self, unique_id, model, status: str, route: list[tuple[tuple[int],tuple[int]]], destination_coords: tuple[int]):
         super().__init__(unique_id, model)
-        self.status = status
+        self.status = status # calculating_route, following_route, arrived
         self.route = route
         self.destination_coords = destination_coords
 
 
+    def pathfinding_heuristic(self, a, b):
+        """
+        Method to calculate the euclidean distance to compare between its options as an heuristic for the pathfinding algorithm
+        """
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
     def calculate_route(self):
-        
-        pass
+        all_neighbors = self.model.grid.get_neighborhood(
+            self.pos,
+            moore=True,
+            include_center=False
+        )
 
     def move(self):     
         self.model.grid.move_to_empty(self)
