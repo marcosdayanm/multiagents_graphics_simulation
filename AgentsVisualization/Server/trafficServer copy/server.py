@@ -1,5 +1,5 @@
-from trafficMesa.agent import *
-from trafficMesa.model import CityModel
+from trafficBase.agent import *
+from trafficBase.model import CityModel
 from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
 
