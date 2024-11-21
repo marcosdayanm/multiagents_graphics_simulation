@@ -17,16 +17,15 @@ class Car(Agent):
     def step(self):
         self.move()
 
-
+# Delete the destination atributte from the class Road, it's neccesary a new class Destination
 class Road(Agent):
-    def __init__(self, unique_id, model, directions: list[str], is_destination: bool):
+    def __init__(self, unique_id, model, directions: list[str]):
         super().__init__(unique_id, model)
         self.directions = directions
-        self.is_destination = is_destination
+        print("Agent ID: ", self.unique_id, "Directions: ", self.directions)
 
     def step(self):
         pass
-
 
 class Traffic_Light(Agent):
     def __init__(self, unique_id, model, directions: list[str], is_red: bool, time_to_change: int, color: str):
@@ -63,3 +62,9 @@ class Obstacle(Agent):
     def step(self):
         pass
 
+class Destination(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+    def step(self):
+        pass
