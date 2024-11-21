@@ -6,6 +6,7 @@ class Car(Agent):
         self.status = status # calculating_route, following_route, arrived
         self.route = route
         self.destination_coords = destination_coords
+        self.color = "blue"
 
 
     def pathfinding_heuristic(self, a, b):
@@ -32,7 +33,7 @@ class Road(Agent):
     def __init__(self, unique_id, model, directions: list[str]):
         super().__init__(unique_id, model)
         self.directions = directions
-        print("Agent ID: ", self.unique_id, "Directions: ", self.directions)
+        self.color = "gray"
 
     def step(self):
         pass
@@ -57,7 +58,7 @@ class Traffic_Light(Agent):
             self.is_red = False
             self.time_to_change = self.time_interval
 
-        elif self.is_red == False and self.time_to_change < 5: # green to yellow
+        elif self.is_red == False and self.time_to_change < 3: # green to yellow
             self.color = "yellow"
         
         self.time_to_change -= 1
@@ -68,6 +69,7 @@ class Obstacle(Agent):
     """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        self.color = "cadetblue"
 
     def step(self):
         pass
@@ -75,6 +77,7 @@ class Obstacle(Agent):
 class Destination(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        self.color = "orange"
 
     def step(self):
         pass

@@ -1,5 +1,5 @@
-from trafficMesa.agent import *
-from trafficMesa.model import CityModel
+from agent import *
+from model import CityModel
 from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
 
@@ -8,28 +8,23 @@ def agent_portrayal(agent):
     
     portrayal = {"Shape": "rect",
                  "Filled": "true",
+                 "Color": agent.color,
                  "Layer": 1,
                  "w": 1,
                  "h": 1
                  }
 
     if (isinstance(agent, Road)):
-        portrayal["Color"] = "grey"
         portrayal["Layer"] = 0
     
-    if (isinstance(agent, Destination)):
-        portrayal["Color"] = "lightgreen"
-        portrayal["Layer"] = 0
+    # if (isinstance(agent, Destination)):
+    #     portrayal["Layer"] = 0
 
     if (isinstance(agent, Traffic_Light)):
-        portrayal["Color"] = "red" if not agent.state else "green"
-        portrayal["Layer"] = 0
         portrayal["w"] = 0.8
         portrayal["h"] = 0.8
 
     if (isinstance(agent, Obstacle)):
-        portrayal["Color"] = "cadetblue"
-        portrayal["Layer"] = 0
         portrayal["w"] = 0.8
         portrayal["h"] = 0.8
 
