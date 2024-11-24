@@ -1,32 +1,66 @@
 from mesa import Agent
+from collections import deque
 
 class Car(Agent):
-    def __init__(self, unique_id, model, status: str, route: list[tuple[tuple[int],tuple[int]]], destination_coords: tuple[int]):
+    def __init__(self, unique_id, model, status: str, street_graph: dict, destination_coords: list[tuple[int, int]]): # route: list[tuple[tuple[int, int],tuple[int, int]]]
         super().__init__(unique_id, model)
         self.status = status # calculating_route, following_route, arrived
-        self.route = route
+        self.route = []
         self.destination_coords = destination_coords
         self.color = "blue"
+        self.street_graph = street_graph
 
 
-    def pathfinding_heuristic(self, a, b):
-        """
-        Method to calculate the euclidean distance to compare between its options as an heuristic for the pathfinding algorithm
-        """
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+    def find_path(self, graph, start, goal):
+        queue = deque()
+        queue.append(start)
+        visited = set()
+        visited.add(start)
+        parent = {}
+        while queue:
+            current = queue.popleft()
+            if current == goal:
+                # Reconstruir el camino
+                path = []
+                while current != start:
+                    path.append(current)
+                    current = parent[current]
+                # path.append(start)
+                path.reverse()
+                return path
+            for neighbor in graph.get(current, []):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    parent[neighbor] = current
+                    queue.append(neighbor)
+        return None  # No se encontró camino
 
-    def calculate_route(self):
-        all_neighbors = self.model.grid.get_neighborhood(
-            self.pos,
-            moore=True,
-            include_center=False
-        )
 
-    def move(self):     
-        self.model.grid.move_to_empty(self)
+    def subsumption(self):
+        if self.status == "calculating_route": # Calculating route
+            self.route = self.find_path(self.street_graph, self.pos, self.random.choice(self.destination_coords))
+            if self.route:
+                self.status = "following_route"
+
+        elif self.status == "following_route": # While following route
+            if self.route:
+                next_cell_contents = self.model.grid.get_cell_list_contents(self.route[0])
+                is_car_agent = len([agent for agent in next_cell_contents if isinstance(agent, Car)]) > 0
+                is_red_traffic_light = len([agent for agent in next_cell_contents if isinstance(agent, Traffic_Light) and agent.is_red]) > 0
+                if is_car_agent or is_red_traffic_light:
+                    return
+                
+                self.model.grid.move_agent(self, self.route.pop(0))
+            else:
+                self.status = "arrived"
+                self.color = "white"
+                self.model.schedule.remove(self)
+                self.model.grid.remove_agent(self)
+
+        ...
 
     def step(self):
-        self.move()
+        self.subsumption()
 
 # Delete the destination atributte from the class Road, it's neccesary a new class Destination
 class Road(Agent):
