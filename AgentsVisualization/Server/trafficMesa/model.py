@@ -20,6 +20,13 @@ class CityModel(Model):
         self.grid_info = grid_info
         self.street_graph = street_graph
 
+        # Stats
+        self.total_cars_at_destination = 0
+        self.total_car_number = 0
+        self.car_number = 0
+        self.average_steps_to_destination = 0
+
+
         for y in range(self.height):
             for x in range(self.width):
                 symbol = grid[y][x]
@@ -44,6 +51,9 @@ class CityModel(Model):
             car = Car(f"c_{pos[0] * self.width + pos[1]}", self, "calculating_route", self.street_graph, self.grid_info["destinations"])
             self.grid.place_agent(car, pos)
             self.schedule.add(car)
+            
+            self.total_car_number += 1
+            self.car_number += 1
 
 
 

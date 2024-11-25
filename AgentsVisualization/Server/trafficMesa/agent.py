@@ -11,7 +11,11 @@ class Car(Agent):
         self.street_graph = street_graph
 
 
-    def find_path(self, graph, start, goal):
+    def bfs(self, graph, start, goal):
+        """
+        This method finds the shortest path between two points in a graph using the Breadth First Search algorithm.
+        It starts from the goal coordinate, expanding all its neighbors and saving the path on the "parent" dictionary.
+        """
         queue = deque()
         queue.append(start)
         visited = set()
@@ -25,7 +29,6 @@ class Car(Agent):
                 while current != start:
                     path.append(current)
                     current = parent[current]
-                # path.append(start)
                 path.reverse()
                 return path
             for neighbor in graph.get(current, []):
@@ -38,9 +41,10 @@ class Car(Agent):
 
     def subsumption(self):
         if self.status == "calculating_route": # Calculating route
-            self.route = self.find_path(self.street_graph, self.pos, self.random.choice(self.destination_coords))
+            self.route = self.bfs(self.street_graph, self.pos, self.random.choice(self.destination_coords))
             if self.route:
                 self.status = "following_route"
+                self.model.average_steps_to_destination = self.model.average_steps_to_destination + ((len(self.route) - self.model.average_steps_to_destination) / (self.model.total_car_number + 1))
 
         elif self.status == "following_route": # While following route
             if self.route:
@@ -48,14 +52,17 @@ class Car(Agent):
                 is_car_agent = len([agent for agent in next_cell_contents if isinstance(agent, Car)]) > 0
                 is_red_traffic_light = len([agent for agent in next_cell_contents if isinstance(agent, Traffic_Light) and agent.is_red]) > 0
                 if is_car_agent or is_red_traffic_light:
-                    return
-                
+                    # TODO: Implement way of checking the other lane while in traffic of in a red light
+                    return 
                 self.model.grid.move_agent(self, self.route.pop(0))
+
             else:
                 self.status = "arrived"
                 self.color = "white"
                 self.model.schedule.remove(self)
                 self.model.grid.remove_agent(self)
+                self.model.total_cars_at_destination += 1
+                self.model.car_number -= 1
 
         ...
 

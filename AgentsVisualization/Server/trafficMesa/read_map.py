@@ -42,7 +42,7 @@ def build_graph(grid_file_path: str):
             position = (x, mesa_y)
             if symbol in ['>', '<', '^', 'v', 'S', 's']: # From a street, we can move to any adjacent cell that does not have an arrow pointing towards us
 
-                for dir_x, dir_y in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                for dir_x, dir_y in [(-1, 0), (1, 0), (0, -1), (0, 1)]: # Check all neighbor cells
                     neigh_x, neigh_y = x + dir_x, y + dir_y
 
                     if not (0 <= neigh_x < cols and 0 <= neigh_y < rows): continue # Neighbor out of bounds
@@ -57,8 +57,7 @@ def build_graph(grid_file_path: str):
                         graph[position].append(neighbor_position)
         
             elif symbol == 'D':
-                # Los destinos pueden ser alcanzados desde calles adir_yacentes
-                for dir_x, dir_y in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                for dir_x, dir_y in [(-1, 0), (1, 0), (0, -1), (0, 1)]: 
                     neigh_x, neigh_y = x + dir_x, y + dir_y
                     if not (0 <= neigh_x < cols and 0 <= neigh_y < rows): continue
 
@@ -74,7 +73,7 @@ def build_graph(grid_file_path: str):
 
 
 
-def find_path(graph, start, goal):
+def bfs(graph, start, goal):
     queue = deque()
     queue.append(start)
     visited = set()
@@ -116,7 +115,7 @@ if __name__ == "__main__":
     goal = (5, 4)
 
     # Encontrar el camino
-    path = find_path(graph, start, goal)
+    path = bfs(graph, start, goal)
 
     # Mostrar el resultado
     if path:
