@@ -9,9 +9,10 @@ class Car(Agent):
         self.destination_coords = destination_coords
         self.color = "blue"
         self.street_graph = street_graph
+        self.direction = (0, 0)
 
 
-    def bfs(self, graph, start, goal):
+    def bfs(self, graph: dict[tuple[int, int], list[tuple[int, int]]], start: tuple[int, int], goal: tuple[int, int]) -> list[tuple[tuple[int, int], tuple[int, int]]]:
         """
         This method finds the shortest path between two points in a graph using the Breadth First Search algorithm.
         It starts from the goal coordinate, expanding all its neighbors and saving the path on the "parent" dictionary.
@@ -21,22 +22,50 @@ class Car(Agent):
         visited = set()
         visited.add(start)
         parent = {}
+        
         while queue:
             current = queue.popleft()
             if current == goal:
-                # Reconstruir el camino
+                # Rebuild the path once the goal is reached
                 path = []
                 while current != start:
                     path.append(current)
                     current = parent[current]
                 path.reverse()
-                return path
+
+                # Adding the direction chance for car representation in WebGl
+                path_with_directions = []
+                previous = start
+                for coord in path:
+                    direction = self.get_direction(previous, coord)
+                    path_with_directions.append((coord, direction))
+                    previous = coord
+                return path_with_directions
+
             for neighbor in graph.get(current, []):
                 if neighbor not in visited:
                     visited.add(neighbor)
                     parent[neighbor] = current
                     queue.append(neighbor)
-        return None  # No se encontró camino
+        return None  # Path not found
+    
+
+    def get_direction(self, from_coord: tuple[int, int], to_coord: tuple[int, int]) -> tuple[int, int]:
+        """
+        Determines the direction between two adjacent coordinates.
+        Returns 'L', 'R', 'U', or 'D' for left, right, up, or down respectively.
+        """
+        dx = to_coord[0] - from_coord[0]
+        dy = to_coord[1] - from_coord[1]
+        
+        if dx == 1 and dy == 0:
+            return (0,1) 
+        elif dx == -1 and dy == 0:
+            return (0,-1) 
+        elif dx == 0 and dy == 1:
+            return (1,0) 
+        elif dx == 0 and dy == -1:
+            return (-1,0)
 
 
     def subsumption(self):
@@ -48,13 +77,15 @@ class Car(Agent):
 
         elif self.status == "following_route": # While following route
             if self.route:
-                next_cell_contents = self.model.grid.get_cell_list_contents(self.route[0])
+                next_cell_contents = self.model.grid.get_cell_list_contents(self.route[0][0])
                 is_car_agent = len([agent for agent in next_cell_contents if isinstance(agent, Car)]) > 0
                 is_red_traffic_light = len([agent for agent in next_cell_contents if isinstance(agent, Traffic_Light) and agent.is_red]) > 0
                 if is_car_agent or is_red_traffic_light:
                     # TODO: Implement way of checking the other lane while in traffic of in a red light
                     return 
-                self.model.grid.move_agent(self, self.route.pop(0))
+                pos_to_move, direction = self.route.pop(0)
+                self.model.grid.move_agent(self, pos_to_move)
+                self.direction = direction
 
             else:
                 self.status = "arrived"
@@ -63,8 +94,6 @@ class Car(Agent):
                 self.model.grid.remove_agent(self)
                 self.model.total_cars_at_destination += 1
                 self.model.car_number -= 1
-
-        ...
 
     def step(self):
         self.subsumption()
