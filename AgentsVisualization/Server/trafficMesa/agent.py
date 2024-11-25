@@ -103,6 +103,7 @@ class Road(Agent):
     def __init__(self, unique_id, model, directions: list[str]):
         super().__init__(unique_id, model)
         self.directions = directions
+        self.orientation = (1, 0)
         self.color = "gray"
 
     def step(self):

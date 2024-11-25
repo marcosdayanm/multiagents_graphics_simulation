@@ -1,46 +1,30 @@
-# Back (Mesa Flask)
+# Movilidad Urbana
 
 **Marcos Dayan A01782876**  
 **José Manuel García Zumaya A01784238**
+
+## Problema
+
+El problema a la movilidad urbana de hace unas décadas se resolvió construyendo autopistas, vías de alta velocidad, carreteras, y calles urbanas con cierta capacidad proyectada en la época. Cada vez es más común moverse con un vehículo motorizado ya sea particular o público, por lo que el tránsito y la concurrencia en las vías aumenta cada año de manera exponencial, aumentando la contaminación generada por los vehículos, el tráfico, y saturando las vías.
+
+## Solución propuesta
+
+Ante esta problemática que no se detendrá y cada año aumentará, es urgente buscar soluciones innovadoras que ayuden a disminuir el tráfico y hagan una movilidad más sostenible. Proponemos abordar este desafío con la implementación de una simulación de multiagentes que represente gráficamente el tráfico actual dominado por los automóviles. Esta herramienta permitirá analizar y comprender mejor la situación presente, y en el futuro, será posible modelar diferentes métodos de transporte innovadores sobre croquis reales de ciudades que se podrán alimentar a la simulación. De esta manera, se podrán diseñar estrategias y probarlas en tiempo real con condiciones similares a las del entrono, para mejorar la movilidad urbana en México.
+
+## Tecnologías usadas para el entorno de simulación
+
+- Mesa v2.4.0
+- Flask v3.1.0
+- Vite v5.3.4
+- TWGL v5.5.4
+- lil-gui: v0.19.2
 
 ## Diseño de los agentes
 
 ### Coche (Car)
 
-1. Atributos
-   1. status: str
-      1. calculating_route
-      1. following_route
-      1. arrived
-   1. route: list[pair: int, pair: int]
-   1. destination_coords: pair: int
-1. Métodos
-   1. calculate_route (Búsqueda con costo uniforme) -> list[pair: int, pair: int]
+#### PEAS
 
-### Calle (Road)
+- P:
 
-1. Atributos
-   1. directions: list[str]
-   1. is_destination: bool
-1. Métodos
-
-### Semáforo (Traffic_Light)
-
-1. Atributos
-   1. directions: list[str]
-   1. is_red: boolean
-   1. status_count: int
-1. Métodos
-
-### Obstáculo (Obstacle)
-
-1. Atributos
-1. Métodos
-
-## Model
-
-### Funciones
-
-1. read_map -> list[list[Agent]]
-
-# Front (WebGL)
+### Próximamente otros agentes....
