@@ -103,7 +103,7 @@ def bfs(graph, start, goal):
 
 if __name__ == "__main__":
     # Build the graph
-    graph, grid, grid_info = build_graph("city_files/2022_base.txt")
+    graph, grid, grid_info = build_graph("../map_files/2022_base.txt")
     print(grid_info)
 
     start = (0, 0)
