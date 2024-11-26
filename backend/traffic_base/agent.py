@@ -100,9 +100,10 @@ class Car(Agent):
 
 # Delete the destination atributte from the class Road, it's neccesary a new class Destination
 class Road(Agent):
-    def __init__(self, unique_id, model, directions: list[str]):
+    def __init__(self, unique_id, model, orientation, directions: list[str]):
         super().__init__(unique_id, model)
         self.directions = directions
+        self.orientation = orientation
         self.color = "gray"
 
     def step(self):

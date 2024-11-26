@@ -68,7 +68,7 @@ class CityModel(Model):
         self.id_counter += 1
 
         if symbol in ["v", "^", ">", "<"]:
-            agent = Road(unique_id, self, [symbol])
+            agent = Road(unique_id, self, (0,1) if symbol in [">", "<"] else (1,0) , [symbol])
 
         elif symbol in ["S", "s"]:
             is_red = False if symbol == "S" else True
