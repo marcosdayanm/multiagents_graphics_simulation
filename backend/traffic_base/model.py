@@ -1,13 +1,13 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from read_map import build_graph
-from agent import *
+from traffic_base.read_map import build_graph
+from traffic_base.agent import *
 import json
 
 class CityModel(Model):
     def __init__(self, N, place_cars_interval: int = 5):
-        street_graph, grid, grid_info = build_graph('../map_files/2022_base.txt')
+        street_graph, grid, grid_info = build_graph('map_files/2022_base.txt')
 
         self.width = len(grid[0])
         self.height = len(grid)
@@ -68,7 +68,7 @@ class CityModel(Model):
         self.id_counter += 1
 
         if symbol in ["v", "^", ">", "<"]:
-            agent = Road(unique_id, self, (0,1) if symbol in [">", "<"] else (1,0) , [symbol])
+            agent = Road(unique_id, self, [1,0] if symbol in [">", "<"] else [0,1] , [symbol])
 
         elif symbol in ["S", "s"]:
             is_red = False if symbol == "S" else True
