@@ -23,6 +23,9 @@ import {
 } from "../shapes/shapes.js";
 
 import { carData } from "../shapes/car.js";
+import { bu3Data } from "../shapes/bu6.js";
+import { bu4Data } from "../shapes/bu10.js";
+import { bu12Data } from "../shapes/bu12.js";
 
 // Define the Object3D class to represent 3D objects
 class Object3D {
@@ -30,13 +33,17 @@ class Object3D {
     id,
     position = [0, 0, 0],
     rotation = [0, 0, 0],
-    scale = [1, 1, 1]
+    scale = [1, 1, 1],
+    material = "Texture1",
+    texture = undefined
   ) {
     this.id = id;
     this.position = position;
     this.rotation = rotation;
     this.scale = scale;
     this.matrix = twgl.m4.create();
+    this.material = material;
+    this.texture = texture;
   }
 }
 
@@ -100,6 +107,52 @@ const data = {
   height: 100,
 };
 
+async function loadMTL(filePath) {
+  try {
+    const response = await fetch(filePath);
+    const mtlContent = await response.text();
+
+    const materials = {};
+    let currentMaterial = null;
+
+    mtlContent.split("\n").forEach((line) => {
+      line = line.trim();
+      if (line.startsWith("newmtl")) {
+        currentMaterial = line.split(" ")[1];
+        materials[currentMaterial] = {};
+      } else if (line.startsWith("map_Kd")) {
+        const texturePath = line.split(" ")[1];
+        if (currentMaterial) {
+          materials[currentMaterial].texturePath = texturePath;
+        }
+      }
+    });
+
+    return materials;
+  } catch (error) {
+    console.error("Error loading MTL file:", error);
+    return null;
+  }
+}
+
+async function loadTextures(gl, materials) {
+  const textures = {};
+
+  for (const [materialName, materialData] of Object.entries(materials)) {
+    if (materialData.texturePath) {
+      const texture = twgl.createTexture(gl, {
+        src: materialData.texturePath,
+        min: gl.LINEAR_MIPMAP_LINEAR,
+        mag: gl.LINEAR,
+        wrap: gl.REPEAT,
+      });
+      textures[materialName] = texture;
+    }
+  }
+
+  return textures;
+}
+
 // Main function to initialize and run the application
 async function main() {
   const canvas = document.querySelector("canvas");
@@ -108,10 +161,14 @@ async function main() {
   // Create the program information using the vertex and fragment shaders
   programInfo = twgl.createProgramInfo(gl, [vsGLSL, fsGLSL]);
 
+  const materials = await loadMTL("./textures/bu12.mtl");
+
   ({ GlobalWidth, GlobalHeight } = await initAgentsModel(data));
   await getRoad(agents);
   await getCars();
-  await getObstacles();
+
+  await getObstacles(materials, gl);
+
   await getDestinations();
   await getTrafficLights();
   // Set up the user interface
@@ -123,7 +180,7 @@ async function main() {
   horizontalRoadsArrays = await generateRoadData(1, [0, 0, 0]);
   verticalRoadsArrays = await generateRoadData(1, [0, 0, 1]);
 
-  obstacleArrays = generateObstacleData(1);
+  obstacleArrays = bu4Data;
   destinationsArrays = generateData(1, true);
   trafficLightsArrays = generateData(1, false, true);
 
@@ -209,36 +266,6 @@ async function main() {
     trafficLightsBufferInfo
   );
 }
-
-/*
- * Initializes the agents model by sending a POST request to the agent server.
- */
-
-// async function initAgentsModel() {
-//   try {
-//     // Send a POST request to the agent server to initialize the model
-//     let response = await fetch(agent_server_uri + "init", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(data),
-//     });
-
-//     // Check if the response was successful
-//     if (response.ok) {
-//       // Parse the response as JSON and log the message
-//       let result = await response.json();
-//       let GlobalWidth = result.width;
-//       let GlobalHeight = result.height;
-//       console.log(result.message);
-//     }
-
-//     return GlobalHeight, GlobalWidth;
-//   } catch (error) {
-//     // Log any errors that occur during the request
-//     console.log("Error initializing agents model:", error);
-//     return 0, 0;
-//   }
-// }
 
 function calculateRotation(orientation) {
   console.log("Orientation", orientation);
@@ -333,102 +360,81 @@ async function getCars() {
 }
 
 /*
- * Retrieves the current positions of all agents from the agent server.
- */
-// async function getRoad() {
-//   try {
-//     // Send a GET request to the agent server to retrieve the road positions
-//     let response = await fetch(agent_server_uri + "getRoad");
-
-//     // Check if the response was successful
-//     if (response.ok) {
-//       // Parse the response as JSON
-//       let result = await response.json();
-
-//       // console.log("Road positions: ", result.positions);
-
-//       // Check if the agents array is initialized, if not, initialize it
-//       if (!Array.isArray(agents)) {
-//         agents = [];
-//       }
-
-//       // Check if the agents array is empty
-//       if (agents.length === 0) {
-//         // Create new agents and add them to the agents array
-//         for (const agent of result.positions) {
-//           const newAgent = new RoadObject(
-//             agent.id,
-//             [agent.position.x, agent.position.y, agent.position.z],
-//             undefined,
-//             undefined,
-//             [agent.orientation.x, agent.orientation.y, agent.orientation.z]
-//           );
-//           agents.push(newAgent);
-//         }
-//       } else {
-//         // Update the positions of existing agents
-//         for (const agent of result.positions) {
-//           const currentAgent = agents.find(
-//             (roadObject) => roadObject.id === agent.id
-//           );
-
-//           // Check if the agent exists in the agents array
-//           if (currentAgent !== undefined) {
-//             // Update the agent's position
-//             currentAgent.position = [
-//               agent.position.x,
-//               agent.position.y,
-//               agent.position.z,
-//             ];
-
-//             // Optionally update orientation if it changes
-//             currentAgent.orientation = [
-//               agent.orientation.x,
-//               agent.orientation.y,
-//               agent.orientation.z,
-//             ];
-//           }
-//         }
-//       }
-//     } else {
-//       console.error(`Failed to fetch road data: ${response.status}`);
-//     }
-//   } catch (error) {
-//     // Log any errors that occur during the request
-//     console.error("Error fetching road data:", error);
-//   }
-// }
-
-/*
  * Retrieves the current positions of all obstacles from the agent server.
  */
-async function getObstacles() {
+async function getObstacles(materials, gl) {
   try {
-    // Send a GET request to the agent server to retrieve the obstacle positions
+    // Enviar una solicitud GET al servidor para obtener las posiciones de los obstáculos
     let response = await fetch(agent_server_uri + "getBuildings");
 
-    // Check if the response was successful
     if (response.ok) {
-      // Parse the response as JSON
+      // Parsear la respuesta como JSON
       let result = await response.json();
 
-      // Create new obstacles and add them to the obstacles array
+      // Crear nuevos obstáculos y añadirlos al array global de obstáculos
       for (const obstacle of result.positions) {
         const newObstacle = new Object3D(obstacle.id, [
           obstacle.x,
           obstacle.y,
           obstacle.z,
         ]);
+
+        // Asignar un material (puedes ajustar esto según cómo determines el material)
+        newObstacle.material = "Texture1"; // Aquí asigna el material basado en lógica específica
+
+        // Asignar la textura desde los materiales cargados
+        const materialName = newObstacle.material;
+        const texturePath = materials[materialName]?.texturePath;
+
+        if (texturePath) {
+          newObstacle.texture = twgl.createTexture(gl, {
+            src: texturePath,
+            min: gl.LINEAR_MIPMAP_LINEAR,
+            mag: gl.LINEAR,
+            wrap: gl.REPEAT,
+          });
+        } else {
+          console.warn(`No texture found for material: ${materialName}`);
+        }
+
         obstacles.push(newObstacle);
       }
-      // Log the obstacles array
+
       console.log("Obstacles:", obstacles);
+    } else {
+      console.error(`Failed to fetch obstacle data: ${response.status}`);
     }
   } catch (error) {
-    // Log any errors that occur during the request
-    console.log(error);
+    console.log("Error fetching obstacles:", error);
   }
 }
+// async function getObstacles() {
+//   try {
+//     // Send a GET request to the agent server to retrieve the obstacle positions
+//     let response = await fetch(agent_server_uri + "getBuildings");
+
+//     // Check if the response was successful
+//     if (response.ok) {
+//       // Parse the response as JSON
+//       let result = await response.json();
+
+//       // Create new obstacles and add them to the obstacles array
+//       for (const obstacle of result.positions) {
+//         const newObstacle = new Object3D(obstacle.id, [
+//           obstacle.x,
+//           obstacle.y,
+//           obstacle.z,
+//         ]);
+//         obstacles.push(newObstacle);
+//       }
+//       // Log the obstacles array
+//       console.log("Obstacles:", obstacles);
+//     }
+//   } catch (error) {
+//     // Log any errors that occur during the request
+//     console.log(error);
+//   }
+// }
 
 async function getDestinations() {
   try {
@@ -741,6 +747,7 @@ function drawObstacles(
     // Set the uniforms for the obstacle
     let uniforms = {
       u_matrix: obstacle.matrix,
+      u_texture: obstacle.texture, // Añadir la textura del obstáculo
     };
 
     // Set the uniforms and draw the obstacle
@@ -748,6 +755,38 @@ function drawObstacles(
     twgl.drawBufferInfo(gl, obstaclesBufferInfo);
   }
 }
+// function drawObstacles(
+//   distance,
+//   obstaclesVao,
+//   obstaclesBufferInfo,
+//   viewProjectionMatrix
+// ) {
+//   // Bind the vertex array object for obstacles
+//   gl.bindVertexArray(obstaclesVao);
+
+//   // Iterate over the obstacles
+//   for (const obstacle of obstacles) {
+//     // Create the obstacle's transformation matrix
+//     const cube_trans = twgl.v3.create(...obstacle.position);
+//     const cube_scale = twgl.v3.create(...obstacle.scale);
+
+//     // Calculate the obstacle's matrix
+//     obstacle.matrix = twgl.m4.translate(viewProjectionMatrix, cube_trans);
+//     obstacle.matrix = twgl.m4.rotateX(obstacle.matrix, obstacle.rotation[0]);
+//     obstacle.matrix = twgl.m4.rotateY(obstacle.matrix, obstacle.rotation[1]);
+//     obstacle.matrix = twgl.m4.rotateZ(obstacle.matrix, obstacle.rotation[2]);
+//     obstacle.matrix = twgl.m4.scale(obstacle.matrix, cube_scale);
+
+//     // Set the uniforms for the obstacle
+//     let uniforms = {
+//       u_matrix: obstacle.matrix,
+//     };
+
+//     // Set the uniforms and draw the obstacle
+//     twgl.setUniforms(programInfo, uniforms);
+//     twgl.drawBufferInfo(gl, obstaclesBufferInfo);
+//   }
+// }
 
 function drawDestinations(
   distance,
@@ -889,3 +928,99 @@ function setupUI() {
 }
 
 main();
+/*
+ * Initializes the agents model by sending a POST request to the agent server.
+ */
+
+// async function initAgentsModel() {
+//   try {
+//     // Send a POST request to the agent server to initialize the model
+//     let response = await fetch(agent_server_uri + "init", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(data),
+//     });
+
+//     // Check if the response was successful
+//     if (response.ok) {
+//       // Parse the response as JSON and log the message
+//       let result = await response.json();
+//       let GlobalWidth = result.width;
+//       let GlobalHeight = result.height;
+//       console.log(result.message);
+//     }
+
+//     return GlobalHeight, GlobalWidth;
+//   } catch (error) {
+//     // Log any errors that occur during the request
+//     console.log("Error initializing agents model:", error);
+//     return 0, 0;
+//   }
+// }
+
+/*
+ * Retrieves the current positions of all agents from the agent server.
+ */
+// async function getRoad() {
+//   try {
+//     // Send a GET request to the agent server to retrieve the road positions
+//     let response = await fetch(agent_server_uri + "getRoad");
+
+//     // Check if the response was successful
+//     if (response.ok) {
+//       // Parse the response as JSON
+//       let result = await response.json();
+
+//       // console.log("Road positions: ", result.positions);
+
+//       // Check if the agents array is initialized, if not, initialize it
+//       if (!Array.isArray(agents)) {
+//         agents = [];
+//       }
+
+//       // Check if the agents array is empty
+//       if (agents.length === 0) {
+//         // Create new agents and add them to the agents array
+//         for (const agent of result.positions) {
+//           const newAgent = new RoadObject(
+//             agent.id,
+//             [agent.position.x, agent.position.y, agent.position.z],
+//             undefined,
+//             undefined,
+//             [agent.orientation.x, agent.orientation.y, agent.orientation.z]
+//           );
+//           agents.push(newAgent);
+//         }
+//       } else {
+//         // Update the positions of existing agents
+//         for (const agent of result.positions) {
+//           const currentAgent = agents.find(
+//             (roadObject) => roadObject.id === agent.id
+//           );
+
+//           // Check if the agent exists in the agents array
+//           if (currentAgent !== undefined) {
+//             // Update the agent's position
+//             currentAgent.position = [
+//               agent.position.x,
+//               agent.position.y,
+//               agent.position.z,
+//             ];
+
+//             // Optionally update orientation if it changes
+//             currentAgent.orientation = [
+//               agent.orientation.x,
+//               agent.orientation.y,
+//               agent.orientation.z,
+//             ];
+//           }
+//         }
+//       }
+//     } else {
+//       console.error(`Failed to fetch road data: ${response.status}`);
+//     }
+//   } catch (error) {
+//     // Log any errors that occur during the request
+//     console.error("Error fetching road data:", error);
+//   }
+// }
