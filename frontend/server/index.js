@@ -6,7 +6,7 @@ import GUI from "lil-gui";
 import vsGLSL from "../shaders/vs.glsl?raw";
 import fsGLSL from "../shaders/fs.glsl?raw";
 
-import { initAgentsModel, getRoad, getCars } from "./client_functions.js";
+import { initAgentsModel, getRoad } from "./client_functions.js";
 
 import {
   CarObject,
@@ -110,7 +110,7 @@ async function main() {
 
   ({ GlobalWidth, GlobalHeight } = await initAgentsModel(data));
   await getRoad(agents);
-  await getCars(cars);
+  await getCars();
   await getObstacles();
   await getDestinations();
   await getTrafficLights();
@@ -240,97 +240,97 @@ async function main() {
 //   }
 // }
 
-// function calculateRotation(orientation) {
-//   console.log("Orientation", orientation);
-//   const { x, y, z } = orientation;
-//   if (x === 0 && y === -1) {
-//     // Izquierda
-//     return Math.PI / 2; // 90° en radianes
-//   } else if (x === 0 && y === 1) {
-//     // Derecha
-//     return -Math.PI / 2; // -90° en radianes
-//   } else if (x === 1 && y === 0) {
-//     // Arriba
-//     return 0; // Sin rotación
-//   } else if (x === -1 && y === 0) {
-//     // Abajo
-//     return Math.PI; // 180° en radianes
-//   }
-//   return 0; // Fallback (sin rotación)
-// }
+function calculateRotation(orientation) {
+  console.log("Orientation", orientation);
+  const { x, y, z } = orientation;
+  if (x === 0 && y === -1) {
+    // Izquierda
+    return Math.PI / 2; // 90° en radianes
+  } else if (x === 0 && y === 1) {
+    // Derecha
+    return -Math.PI / 2; // -90° en radianes
+  } else if (x === 1 && y === 0) {
+    // Arriba
+    return 0; // Sin rotación
+  } else if (x === -1 && y === 0) {
+    // Abajo
+    return Math.PI; // 180° en radianes
+  }
+  return 0; // Fallback (sin rotación)
+}
 
-// async function getCars() {
-//   try {
-//     let response = await fetch(agent_server_uri + "getCars");
+async function getCars() {
+  try {
+    let response = await fetch(agent_server_uri + "getCars");
 
-//     if (response.ok) {
-//       let result = await response.json();
+    if (response.ok) {
+      let result = await response.json();
 
-//       if (!Array.isArray(cars)) {
-//         cars = [];
-//       }
+      if (!Array.isArray(cars)) {
+        cars = [];
+      }
 
-//       if (cars.length === 0) {
-//         for (const car of result.positions) {
-//           const newCar = new CarObject(
-//             car.id,
-//             [car.position.x, car.position.y, car.position.z],
-//             undefined,
-//             undefined,
-//             [car.orientation.x, car.orientation.y, car.orientation.z]
-//           );
-//           cars.push(newCar);
-//         }
-//       } else {
-//         for (const car of cars) {
-//           const currentIdCar = car.id;
-//           const found = result.positions.find((car) => car.id === currentIdCar);
+      if (cars.length === 0) {
+        for (const car of result.positions) {
+          const newCar = new CarObject(
+            car.id,
+            [car.position.x, car.position.y, car.position.z],
+            undefined,
+            undefined,
+            [car.orientation.x, car.orientation.y, car.orientation.z]
+          );
+          cars.push(newCar);
+        }
+      } else {
+        for (const car of cars) {
+          const currentIdCar = car.id;
+          const found = result.positions.find((car) => car.id === currentIdCar);
 
-//           if (found === undefined) {
-//             // If the id does not exist in the new data, remove it from the array
-//             // that means that car have been removed in backend
-//             const index = cars.findIndex((car) => car.id === currentIdCar);
-//             if (index > -1) {
-//               cars.splice(index, 1);
-//             }
-//           }
-//         }
-//         for (const car of result.positions) {
-//           const currentCar = cars.find((CarObject) => CarObject.id === car.id);
+          if (found === undefined) {
+            // If the id does not exist in the new data, remove it from the array
+            // that means that car have been removed in backend
+            const index = cars.findIndex((car) => car.id === currentIdCar);
+            if (index > -1) {
+              cars.splice(index, 1);
+            }
+          }
+        }
+        for (const car of result.positions) {
+          const currentCar = cars.find((CarObject) => CarObject.id === car.id);
 
-//           if (currentCar !== undefined) {
-//             currentCar.position = [
-//               car.position.x,
-//               car.position.y,
-//               car.position.z,
-//             ];
+          if (currentCar !== undefined) {
+            currentCar.position = [
+              car.position.x,
+              car.position.y,
+              car.position.z,
+            ];
 
-//             // Rotate the car by orientation
-//             currentCar.rotation = currentCar.rotation = [
-//               0,
-//               calculateRotation(car.orientation),
-//               0,
-//             ]; // Solo rotación en el eje Y
-//           } else {
-//             // Create a new car that was creaded in the backend
-//             const newCar = new CarObject(
-//               car.id,
-//               [car.position.x, car.position.y, car.position.z],
-//               undefined,
-//               undefined,
-//               [car.orientation.x, car.orientation.y, car.orientation.z]
-//             );
-//             cars.push(newCar);
-//           }
-//         }
-//       }
-//     } else {
-//       console.error(`Failed to fetch car data: ${response.status}`);
-//     }
-//   } catch (error) {
-//     console.error("Error fetching car data:", error);
-//   }
-// }
+            // Rotate the car by orientation
+            currentCar.rotation = currentCar.rotation = [
+              0,
+              calculateRotation(car.orientation),
+              0,
+            ]; // Solo rotación en el eje Y
+          } else {
+            // Create a new car that was creaded in the backend
+            const newCar = new CarObject(
+              car.id,
+              [car.position.x, car.position.y, car.position.z],
+              undefined,
+              undefined,
+              [car.orientation.x, car.orientation.y, car.orientation.z]
+            );
+            cars.push(newCar);
+          }
+        }
+      }
+    } else {
+      console.error(`Failed to fetch car data: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error fetching car data:", error);
+  }
+}
 
 /*
  * Retrieves the current positions of all agents from the agent server.
@@ -497,7 +497,7 @@ async function update() {
     // Check if the response was successful
     if (response.ok) {
       // Retrieve the updated agent positions
-      await getCars(cars);
+      await getCars();
       // Log a message indicating that the agents have been updated
       console.log("Updated agents");
     }

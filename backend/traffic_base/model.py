@@ -10,7 +10,7 @@ import json
 class CityModel(Model):
     def __init__(self, N, place_cars_interval: int = 5):
         # street_graph, grid, grid_info = build_graph('../map_files/2022_base.txt')
-        street_graph, grid, grid_info = build_graph('map_files/2022_base.txt')
+        street_graph, grid, grid_info = build_graph('map_files/2024_base.txt')
 
         self.width = len(grid[0])
         self.height = len(grid)
