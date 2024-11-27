@@ -1,6 +1,7 @@
-# TC2008B. Sistemas Multiagentes y Gráficas Computacionales
-# Python flask server to interact with Unity. Based on the code provided by Sergio Ruiz.
-# Octavio Navarro. October 2023 
+# Marcos Dayan Mann A01782876
+# José Manuel García Zumaya A01784238
+# 20 noviembre 2024
+
 # import sys
 # import os
 
