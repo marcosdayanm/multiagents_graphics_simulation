@@ -11,10 +11,7 @@ import json
 
 class CityModel(Model):
     def __init__(self, N, place_cars_interval: int = 2):
-        street_graph, grid, grid_info = build_graph('../map_files/2022_base.txt')
-
-        print(f"Street graph (3,19) destino: {street_graph[(3,19)]}")
-        print(f"Street graph (3,18) antes de destino: {street_graph[(3,18)]}")
+        street_graph, grid, grid_info = build_graph('../map_files/2024_base.txt')
 
         self.width = len(grid[0])
         self.height = len(grid)
@@ -54,6 +51,9 @@ class CityModel(Model):
             self.place_cars()
         self.schedule.step()
 
+        self.terminal_report()
+
+    def terminal_report(self):
         print(f"\n\nREPORTING: \nTOTAL_CAR_NUMBER: {self.total_car_number} \nTOTAL_CARS_AT_DESTINATION: {self.total_cars_at_destination} \nCURRENT_CAR_NUMBER: {self.current_car_number} \nAVERAGE_STEPS_TO_DESTINATION: {self.average_steps_to_destination}")
 
     def place_cars(self):
