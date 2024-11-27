@@ -4,6 +4,7 @@ export class CarObject {
   constructor(
     id,
     position = [0, 0, 0],
+    // rotation in radians
     rotation = [0, 0, 0],
     scale = [1, 1, 1],
     orientation = [0, 0, 0]

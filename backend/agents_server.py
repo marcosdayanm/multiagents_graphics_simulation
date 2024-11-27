@@ -84,8 +84,8 @@ def getCars():
                             },
                             "orientation": {
                                 "x": agent.direction[0],
-                                "y": 0,
-                                "z": agent.direction[1]
+                                "y": agent.direction[1],
+                                "z": 0
                             }
                         })
                         
