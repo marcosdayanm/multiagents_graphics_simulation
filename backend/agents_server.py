@@ -56,6 +56,41 @@ def initModel():
 
         # Devolver un mensaje indicando éxito
         return jsonify({"message": "Parameters received, model initiated.", "width": width, "height": height})
+    
+
+
+@app.route('/getCars', methods=['GET'])
+@cross_origin(origins="*")  # Permitir solicitudes desde cualquier origen
+def getCars():
+    global randomModel
+
+    if request.method == 'GET':
+        # Lista para almacenar las posiciones de los agentes de tipo Car
+        car_positions = []
+        seen_ids = set()
+        
+        # Iterar sobre la grilla del modelo
+        for cell_contents, (x, z) in randomModel.grid.coord_iter():
+            for agent in cell_contents:
+                if isinstance(agent, Car):
+                    if agent.unique_id not in seen_ids:
+                        seen_ids.add(agent.unique_id)
+                        car_positions.append({
+                            "id": str(agent.unique_id),
+                            "position": {
+                                "x": x,
+                                "y": 1,  # Altura constante para WebGL
+                                "z": z
+                            },
+                            "orientation": {
+                                "x": agent.direction[0],
+                                "y": 0,
+                                "z": agent.direction[1]
+                            }
+                        })
+                        
+        print("Car positions:", car_positions)
+        return jsonify({'positions': car_positions})
 
 # This route will be used to get the positions of the agents
 @app.route('/getRoad', methods=['GET'])
@@ -89,7 +124,7 @@ def getAgents():
                         })
 
         # Log para depuración
-        print("Road positions:", road_positions)
+        # print("Road positions:", road_positions)
 
         # Devolver la lista de posiciones en formato JSON
         return jsonify({'positions': road_positions})

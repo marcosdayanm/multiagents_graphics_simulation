@@ -18,7 +18,14 @@ import {
   generateRoadData,
   generateData,
   generateObstacleData,
-} from "./shapes.js";
+} from "./shapes/shapes.js";
+
+// import { carData } from "./shapes/car.js";
+// import { carData2 } from "./shapes/car2.js";
+
+import { carData } from "./shapes/car.js";
+
+import { v3, m4 } from "./transforms/starter_3D_lib.js";
 
 // Define the Object3D class to represent 3D objects
 class Object3D {
@@ -40,6 +47,7 @@ class Object3D {
 const agent_server_uri = "http://localhost:8585/";
 
 // Initialize arrays to store agents and obstacles
+const cars = [];
 const agents = [];
 const obstacles = [];
 const destinations = [];
@@ -60,8 +68,6 @@ let gl,
   trafficLightsBufferInfo,
   trafficLightsVao;
 
-let agentArrays = [];
-
 let horizontalRoadsArrays;
 let verticalRoadsArrays;
 
@@ -70,6 +76,10 @@ let verticalRoadsBufferInfo;
 
 let horizontalRoadsVao;
 let verticalRoadsVao;
+
+let carArrays = [];
+let carBufferInfo;
+let carVao;
 
 // Define the camera position
 const cameraPosition = {
@@ -98,28 +108,11 @@ async function main() {
   // Create the program information using the vertex and fragment shaders
   programInfo = twgl.createProgramInfo(gl, [vsGLSL, fsGLSL]);
 
-  // Generate Road Data
-  // if (agents.length > 0) {
-  //   for (const agent of agents) {
-  //     const roadData = generateRoadData(1, agent.orientation);
-  //     agentArrays.push(roadData);
-  //   }
-  // }
-
   await initAgentsModel();
   await getRoad();
 
-  // console.log("Length of agents: ", agents.length);
-
-  // if (agents.length > 0) {
-  //   for (const agent of agents) {
-  //     let roadData = await generateRoadData(1, agent.orientation);
-  //     console.log("Road Data: ", roadData);
-  //     agentArrays.push(roadData);
-  //   }
-  // } else {
-  //   console.log("No agents found");
-  // }
+  // only the car dictionary without size
+  carArrays = carData;
 
   horizontalRoadsArrays = await generateRoadData(1, [0, 0, 0]);
   verticalRoadsArrays = await generateRoadData(1, [0, 0, 1]);
@@ -127,6 +120,8 @@ async function main() {
   obstacleArrays = generateObstacleData(1);
   destinationsArrays = generateData(1, true);
   trafficLightsArrays = generateData(1, false, true);
+
+  carBufferInfo = twgl.createBufferInfoFromArrays(gl, carArrays);
 
   // Create buffer information from the agent and obstacle data
   horizontalRoadsBufferInfo = twgl.createBufferInfoFromArrays(
@@ -147,6 +142,8 @@ async function main() {
     gl,
     trafficLightsArrays
   );
+
+  carVao = twgl.createVAOFromBufferInfo(gl, programInfo, carBufferInfo);
 
   // Create vertex array objects (VAOs) from the buffer information
   horizontalRoadsVao = twgl.createVAOFromBufferInfo(
@@ -196,11 +193,14 @@ async function main() {
   await getObstacles();
   await getDestinations();
   await getTrafficLights();
+  await getCars();
 
   // Draw the scene
   await drawScene(
     gl,
     programInfo,
+    carVao,
+    carBufferInfo,
     horizontalRoadsVao,
     horizontalRoadsBufferInfo,
     verticalRoadsVao,
@@ -244,6 +244,80 @@ async function initAgentsModel() {
   }
 }
 
+async function getCars() {
+  try {
+    let response = await fetch(agent_server_uri + "getCars");
+
+    if (response.ok) {
+      let result = await response.json();
+
+      if (!Array.isArray(cars)) {
+        cars = [];
+      }
+
+      if (cars.length === 0) {
+        for (const car of result.positions) {
+          const newCar = new CarObject(
+            car.id,
+            [car.position.x, car.position.y, car.position.z],
+            undefined,
+            undefined,
+            [car.orientation.x, car.orientation.y, car.orientation.z]
+          );
+          cars.push(newCar);
+        }
+      } else {
+        for (const car of cars) {
+          const currentIdCar = car.id;
+          const found = result.positions.find((car) => car.id === currentIdCar);
+
+          if (found === undefined) {
+            // If the id does not exist in the new data, remove it from the array
+            // that means that car have been removed in backend
+            const index = cars.findIndex((car) => car.id === currentIdCar);
+            if (index > -1) {
+              cars.splice(index, 1);
+            }
+          }
+        }
+        for (const car of result.positions) {
+          const currentCar = cars.find(
+            (roadObject) => roadObject.id === car.id
+          );
+
+          if (currentCar !== undefined) {
+            currentCar.position = [
+              car.position.x,
+              car.position.y,
+              car.position.z,
+            ];
+
+            currentCar.orientation = [
+              car.orientation.x,
+              car.orientation.y,
+              car.orientation.z,
+            ];
+          } else {
+            // Create a new car that was creaded in the backend
+            const newCar = new CarObject(
+              car.id,
+              [car.position.x, car.position.y, car.position.z],
+              undefined,
+              undefined,
+              [car.orientation.x, car.orientation.y, car.orientation.z]
+            );
+            cars.push(newCar);
+          }
+        }
+      }
+    } else {
+      console.error(`Failed to fetch car data: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error fetching car data:", error);
+  }
+}
+
 /*
  * Retrieves the current positions of all agents from the agent server.
  */
@@ -257,7 +331,7 @@ async function getRoad() {
       // Parse the response as JSON
       let result = await response.json();
 
-      console.log("Road positions: ", result.positions);
+      // console.log("Road positions: ", result.positions);
 
       // Check if the agents array is initialized, if not, initialize it
       if (!Array.isArray(agents)) {
@@ -409,7 +483,7 @@ async function update() {
     // Check if the response was successful
     if (response.ok) {
       // Retrieve the updated agent positions
-      // await getRoad();
+      await getCars();
       // Log a message indicating that the agents have been updated
       console.log("Updated agents");
     }
@@ -432,6 +506,8 @@ async function update() {
 async function drawScene(
   gl,
   programInfo,
+  carVao,
+  carBufferInfo,
   horizontalRoadsVao,
   horizontalRoadsBufferInfo,
   verticalRoadsVao,
@@ -465,6 +541,7 @@ async function drawScene(
   // Set the distance for rendering
   const distance = 1;
 
+  drawCars(distance, carVao, carBufferInfo, viewProjectionMatrix);
   // Draw the agents
   drawAgents(
     distance,
@@ -510,6 +587,8 @@ async function drawScene(
     drawScene(
       gl,
       programInfo,
+      carVao,
+      carBufferInfo,
       horizontalRoadsVao,
       horizontalRoadsBufferInfo,
       verticalRoadsVao,
@@ -532,6 +611,34 @@ async function drawScene(
  * @param {Object} agentsBufferInfo - The buffer information for agents.
  * @param {Float32Array} viewProjectionMatrix - The view-projection matrix.
  */
+
+function drawCars(distance, carVao, carBufferInfo, viewProjectionMatrix) {
+  // Bind the appropriate VAO
+  gl.bindVertexArray(carVao);
+
+  // Iterate over the agents
+  for (const car of cars) {
+    // Create the agent's transformation matrix
+    const cube_trans = twgl.v3.create(...car.position);
+    const cube_scale = twgl.v3.create(...car.scale);
+
+    // Calculate the agent's matrix
+    car.matrix = twgl.m4.translate(viewProjectionMatrix, cube_trans);
+    car.matrix = twgl.m4.rotateX(car.matrix, car.rotation[0]);
+    car.matrix = twgl.m4.rotateY(car.matrix, car.rotation[1]);
+    car.matrix = twgl.m4.rotateZ(car.matrix, car.rotation[2]);
+    car.matrix = twgl.m4.scale(car.matrix, cube_scale);
+
+    // Set the uniforms for the agent
+    let uniforms = {
+      u_matrix: car.matrix,
+    };
+
+    // Set the uniforms and draw the agent
+    twgl.setUniforms(programInfo, uniforms);
+    twgl.drawBufferInfo(gl, carBufferInfo);
+  }
+}
 
 function drawAgents(
   distance,

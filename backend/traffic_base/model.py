@@ -1,12 +1,15 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+# from read_map import build_graph
+# from agent import *
 from traffic_base.read_map import build_graph
 from traffic_base.agent import *
 import json
 
 class CityModel(Model):
     def __init__(self, N, place_cars_interval: int = 5):
+        # street_graph, grid, grid_info = build_graph('../map_files/2022_base.txt')
         street_graph, grid, grid_info = build_graph('map_files/2022_base.txt')
 
         self.width = len(grid[0])
