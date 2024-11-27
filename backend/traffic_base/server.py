@@ -1,12 +1,14 @@
 # Marcos Dayan Mann A01782876
 # José Manuel García Zumaya A01784238
 # 20 noviembre 2024
+# This file runs a mesa server for visualizing and building the traffic base model.
 
 from agent import *
 from model import CityModel
 from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
 
+# Agent graphic visualization function deoending on the agent type
 def agent_portrayal(agent):
     if agent is None: return
     
@@ -39,12 +41,12 @@ def agent_portrayal(agent):
 width = 0
 height = 0
 
-with open('../map_files/2024_base.txt') as baseFile:
+with open('../map_files/2024_base.txt') as baseFile: # Getting the map dimensions
     lines = baseFile.readlines()
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N":5}
+model_params = {"place_cars_interval": 3}  # Interval for placing cars
 
 print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)

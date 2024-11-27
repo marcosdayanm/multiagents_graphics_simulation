@@ -2,8 +2,6 @@
 # José Manuel García Zumaya A01784238
 # 20 noviembre 2024
 
-from collections import deque
-
 def build_graph(grid_file_path: str): 
     if not grid_file_path:
         print("No se ha especificado un archivo de mapa")
@@ -11,8 +9,9 @@ def build_graph(grid_file_path: str):
 
     with open(grid_file_path, 'r', encoding='utf-8') as file:
         map_text = [line.rstrip('\n') for line in file]
-    grid = [list(line) for line in map_text]
+    grid = [list(line) for line in map_text] # Parsing the map text file into a 2D list
 
+    # map length
     rows = len(grid)
     cols = len(grid[0])
 
@@ -32,7 +31,7 @@ def build_graph(grid_file_path: str):
         'D': (0, 0),
     }
 
-    # Initializing the graph with each possible node on it, but without connections
+    # Initializing the graph with each possible node on it, but without connections, for refering to neighbor graph nodes that might not be inicialized yet if this step wasn't included
     for y in range(rows):
         for x in range(cols):
             symbol = grid[y][x]
@@ -81,45 +80,3 @@ def build_graph(grid_file_path: str):
                         graph[neighbor_position].append(position)
 
     return graph, grid, grid_info
-
-# def bfs(graph, start, goal):
-#     queue = deque()
-#     queue.append(start)
-#     visited = set()
-#     visited.add(start)
-#     parent = {}
-#     while queue:
-#         current = queue.popleft()
-#         if current == goal:
-#             # Rebuild the path
-#             path = []
-#             while current != start:
-#                 path.append(current)
-#                 current = parent[current]
-#             path.reverse()
-#             return path
-#         for neighbor in graph.get(current, []):
-#             if neighbor not in visited:
-#                 visited.add(neighbor)
-#                 parent[neighbor] = current
-#                 queue.append(neighbor)
-#     return None  # No path found
-
-# if __name__ == "__main__":
-#     # Build the graph
-#     graph, grid, grid_info = build_graph("../map_files/2022_base.txt")
-#     print(grid_info)
-
-#     start = (0, 0)
-#     goal = (5, 4)
-
-#     # Find the path
-#     path = bfs(graph, start, goal)
-
-#     # Display the result
-#     if path:
-#         print("Camino encontrado:")
-#         for pos in path:
-#             print(pos)
-#     else:
-#         print(f"No se encontró un camino desde {start} hasta {goal}")
