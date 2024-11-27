@@ -1,3 +1,7 @@
+# Marcos Dayan Mann A01782876
+# José Manuel García Zumaya A01784238
+# 20 noviembre 2024
+
 from collections import deque
 
 def build_graph(grid_file_path: str): 
@@ -78,44 +82,44 @@ def build_graph(grid_file_path: str):
 
     return graph, grid, grid_info
 
-def bfs(graph, start, goal):
-    queue = deque()
-    queue.append(start)
-    visited = set()
-    visited.add(start)
-    parent = {}
-    while queue:
-        current = queue.popleft()
-        if current == goal:
-            # Rebuild the path
-            path = []
-            while current != start:
-                path.append(current)
-                current = parent[current]
-            path.reverse()
-            return path
-        for neighbor in graph.get(current, []):
-            if neighbor not in visited:
-                visited.add(neighbor)
-                parent[neighbor] = current
-                queue.append(neighbor)
-    return None  # No path found
+# def bfs(graph, start, goal):
+#     queue = deque()
+#     queue.append(start)
+#     visited = set()
+#     visited.add(start)
+#     parent = {}
+#     while queue:
+#         current = queue.popleft()
+#         if current == goal:
+#             # Rebuild the path
+#             path = []
+#             while current != start:
+#                 path.append(current)
+#                 current = parent[current]
+#             path.reverse()
+#             return path
+#         for neighbor in graph.get(current, []):
+#             if neighbor not in visited:
+#                 visited.add(neighbor)
+#                 parent[neighbor] = current
+#                 queue.append(neighbor)
+#     return None  # No path found
 
-if __name__ == "__main__":
-    # Build the graph
-    graph, grid, grid_info = build_graph("../map_files/2022_base.txt")
-    print(grid_info)
+# if __name__ == "__main__":
+#     # Build the graph
+#     graph, grid, grid_info = build_graph("../map_files/2022_base.txt")
+#     print(grid_info)
 
-    start = (0, 0)
-    goal = (5, 4)
+#     start = (0, 0)
+#     goal = (5, 4)
 
-    # Find the path
-    path = bfs(graph, start, goal)
+#     # Find the path
+#     path = bfs(graph, start, goal)
 
-    # Display the result
-    if path:
-        print("Camino encontrado:")
-        for pos in path:
-            print(pos)
-    else:
-        print(f"No se encontró un camino desde {start} hasta {goal}")
+#     # Display the result
+#     if path:
+#         print("Camino encontrado:")
+#         for pos in path:
+#             print(pos)
+#     else:
+#         print(f"No se encontró un camino desde {start} hasta {goal}")
