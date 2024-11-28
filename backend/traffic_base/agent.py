@@ -282,7 +282,7 @@ class Traffic_Light(Agent):
             self.is_red = False
             self.time_to_change = self.time_interval
 
-        elif self.is_red == False and self.time_to_change < 3: # green to yellow
+        elif self.is_red == False and self.time_to_change < 2: # green to yellow
             self.color = "yellow"
             self.is_yellow = True
         

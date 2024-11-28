@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 from traffic_base.model import CityModel
 from traffic_base.agent import Road, Traffic_Light, Obstacle, Destination, Car
 from flask_cors import CORS, cross_origin
+import requests
 
 # Size of the board:
 number_agents = 10

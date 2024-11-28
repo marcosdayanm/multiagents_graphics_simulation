@@ -10,6 +10,7 @@ from traffic_base.read_map import build_graph
 from traffic_base.agent import *
 # from agent import *
 import json
+import requests
 
 class CityModel(Model):
     def __init__(self, place_cars_interval: int = 2):
@@ -51,12 +52,33 @@ class CityModel(Model):
             print("All IDs are unique.")
 
 
+    def send_stats(self, url: str = "http://localhost:5000/api/"):
+        endpoint = "validate_attempt"
+
+        data = {
+            "year" : 2024,
+            "classroom" : 301,
+            "name" : "Equipo 3",
+            "current_cars": self.current_car_number,
+            "total_arrived": self.total_cars_at_destination,
+        }
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url+endpoint, data=json.dumps(data), headers=headers)
+
+        # print("Request " + "successful" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+        # print("Response:", response.json())
+
+
     def step(self):
-        print(f"Schedule steps: {self.schedule.steps}, place_cars_interval: {self.place_cars_interval}")
         '''Advance the model by one step.'''
         if self.schedule.steps % self.place_cars_interval == 0: # Determines the moment to place cars based on the interval defined
             print("Placing cars")
             self.place_cars()
+        self.send_stats()
         self.schedule.step()
 
         # self.terminal_report() # Prints the metrics of the simulation on the terminal
@@ -117,7 +139,7 @@ class CityModel(Model):
 
         elif symbol in ["S", "s"]: 
             is_red = False if symbol == "S" else True
-            agent = Traffic_Light(unique_id, self, [symbol], is_red, 15, "red" if is_red else "green")
+            agent = Traffic_Light(unique_id, self, [symbol], is_red, 7, "red" if is_red else "green")
 
         elif symbol == "#":
             agent = Obstacle(unique_id, self)
