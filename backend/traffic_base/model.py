@@ -139,7 +139,7 @@ class CityModel(Model):
 
         elif symbol in ["S", "s"]: 
             is_red = False if symbol == "S" else True
-            agent = Traffic_Light(unique_id, self, [symbol], is_red, 7, "red" if is_red else "green")
+            agent = Traffic_Light(unique_id, self, [symbol], is_red, 10, "red" if is_red else "green")
 
         elif symbol == "#":
             agent = Obstacle(unique_id, self)
