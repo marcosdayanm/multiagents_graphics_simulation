@@ -104,7 +104,7 @@ const cameraPosition = {
   x: 0,
   y: 20, // Altura inicial de la cámara
   z: 0,
-  rot_y: 0, // Ángulo de rotación en grados
+  rot_y: 90, // Ángulo de rotación en grados
   radius: 30, // Radio de la órbita
 };
 
