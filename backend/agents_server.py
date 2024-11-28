@@ -2,13 +2,6 @@
 # José Manuel García Zumaya A01784238
 # 20 noviembre 2024
 
-# import sys
-# import os
-
-# # Agrega el directorio padre al sys.path
-# parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-# sys.path.append(parent_dir)
-
 from flask import Flask, request, jsonify
 from traffic_base.model import CityModel
 from traffic_base.agent import Road, Traffic_Light, Obstacle, Destination, Car
@@ -50,7 +43,7 @@ def initModel():
         currentStep = 0
 
         # Crear el modelo utilizando los parámetros
-        randomModel = CityModel(number_agents)
+        randomModel = CityModel(2)
         
         width = randomModel.width
         height = randomModel.height
@@ -85,12 +78,12 @@ def getCars():
                             },
                             "orientation": {
                                 "x": agent.direction[0],
-                                "y": agent.direction[1],
-                                "z": 0
+                                "y": 0,
+                                "z": agent.direction[1]
                             }
                         })
                         
-        print("Car positions:", car_positions)
+        # print("Car positions:", car_positions)
         return jsonify({'positions': car_positions})
 
 # This route will be used to get the positions of the agents
@@ -98,6 +91,11 @@ def getCars():
 @cross_origin(origins="*")  # Permitir solicitudes desde cualquier origen
 def getAgents():
     global randomModel
+          # Orientations:
+        # (1, 0, 0) -> Right
+        # (-1, 0, 0) -> Left
+        # (0, 0, 1) -> Up
+        # (0, 0, -1) -> Down
 
     if request.method == 'GET':
         # Lista para almacenar las posiciones de los agentes de tipo Road
@@ -187,7 +185,7 @@ def getTrafficLights():
                         "y": 1,
                         "z": z,
                         "is_red": agent.is_red,
-                        "time_to_change": agent.time_to_change,
+                        "is_yellow": agent.is_yellow,
                     })
 
         return jsonify({'positions':trafficLightPositions})

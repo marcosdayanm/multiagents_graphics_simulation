@@ -88,6 +88,8 @@ class Car(Agent):
         dx = -1 if to_coord[0] - from_coord[0] < 0 else 1 if to_coord[0] - from_coord[0] > 0 else 0
         dy = -1 if to_coord[1] - from_coord[1] < 0 else 1 if to_coord[1] - from_coord[1] > 0 else 0
 
+        if dx == 0 and dy == 0:
+            return self.direction
         return (dx, dy)
 
    
