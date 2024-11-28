@@ -5,8 +5,8 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from read_map import build_graph
-from agent import *
+from traffic_base.read_map import build_graph
+from traffic_base.agent import *
 import json
 
 class CityModel(Model):
