@@ -78,7 +78,9 @@ class CityModel(Model):
         if self.schedule.steps % self.place_cars_interval == 0: # Determines the moment to place cars based on the interval defined
             print("Placing cars")
             self.place_cars()
-        self.send_stats()
+        
+        if self.schedule.steps % 10 == 0:
+            self.send_stats()
         self.schedule.step()
 
         # self.terminal_report() # Prints the metrics of the simulation on the terminal
