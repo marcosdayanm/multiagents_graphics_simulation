@@ -11,7 +11,7 @@
 
 from flask import Flask, request, jsonify
 from traffic_base.model import CityModel
-from traffic_base.agent import Road, Traffic_Light, Obstacle, Destination
+from traffic_base.agent import Road, Traffic_Light, Obstacle, Destination, Car
 from flask_cors import CORS, cross_origin
 
 # Size of the board:
@@ -57,24 +57,54 @@ def initModel():
 
         # Devolver un mensaje indicando éxito
         return jsonify({"message": "Parameters received, model initiated.", "width": width, "height": height})
+    
+
+
+@app.route('/getCars', methods=['GET'])
+@cross_origin(origins="*")  # Permitir solicitudes desde cualquier origen
+def getCars():
+    global randomModel
+
+    if request.method == 'GET':
+        # Lista para almacenar las posiciones de los agentes de tipo Car
+        car_positions = []
+        seen_ids = set()
+        
+        # Iterar sobre la grilla del modelo
+        for cell_contents, (x, z) in randomModel.grid.coord_iter():
+            for agent in cell_contents:
+                if isinstance(agent, Car):
+                    if agent.unique_id not in seen_ids:
+                        seen_ids.add(agent.unique_id)
+                        car_positions.append({
+                            "id": str(agent.unique_id),
+                            "position": {
+                                "x": x,
+                                "y": 1,  # Altura constante para WebGL
+                                "z": z
+                            },
+                            "orientation": {
+                                "x": agent.direction[0],
+                                "y": agent.direction[1],
+                                "z": 0
+                            }
+                        })
+                        
+        print("Car positions:", car_positions)
+        return jsonify({'positions': car_positions})
 
 # This route will be used to get the positions of the agents
-@app.route('/getAgents', methods=['GET'])
+@app.route('/getRoad', methods=['GET'])
 @cross_origin(origins="*")  # Permitir solicitudes desde cualquier origen
 def getAgents():
     global randomModel
 
     if request.method == 'GET':
-        # Función auxiliar para imprimir el tipo y contenido de cada agente
-        def debug_and_return(agent, position):
-            # print(f"Placing agent: {type(agent)} at position {position}")
-            return agent
-
         # Lista para almacenar las posiciones de los agentes de tipo Road
         road_positions = []
-        last_row_positions = [] # Debug
         seen_ids = set()  # Conjunto para rastrear IDs únicos
 
+        # Iterar sobre la grilla del modelo
         for cell_contents, (x, z) in randomModel.grid.coord_iter():
             for agent in cell_contents:  # Itera sobre todos los agentes en la celda
                 if isinstance(agent, Road):  # Filtra por agentes de tipo Road
@@ -82,27 +112,22 @@ def getAgents():
                         seen_ids.add(agent.unique_id)  # Marca este ID como visto
                         road_positions.append({
                             "id": str(agent.unique_id),
-                            "x": x,
-                            "y": 1,  # Altura constante para WebGL
-                            "z": z
+                            "position": {
+                                "x": x,
+                                "y": 1,  # Altura constante para WebGL
+                                "z": z
+                            },
+                            "orientation": {
+                                "x": agent.orientation[0],
+                                "y": 0,
+                                "z": agent.orientation[1]
+                            }
                         })
 
-        # Debug: imprime todas las posiciones obtenidas
-        # print("Agent positions in Python:", road_positions)
-        
-        # print("Real agents in first row")
-        # for agent in road_positions:
-        #     # Extraer el ID y convertirlo a entero
-        #     agent_id_num = int(agent['id'][2:])  # Usa el campo 'id' del diccionario
-        #     if agent_id_num % 24 == 1:  # Comprobar si es divisible por 24
-        #         print("Agent id: ", agent['id'])
-        #         print("Agent x: ", agent['x'])
-        #         print("Agent y: ", agent['y'])
-        #         print("Agent z: ", agent['z'])
-        
-        # print("Last row in positions:", last_row_positions)
+        # Log para depuración
+        # print("Road positions:", road_positions)
 
-        # Retorna las posiciones en formato JSON
+        # Devolver la lista de posiciones en formato JSON
         return jsonify({'positions': road_positions})
 
 
