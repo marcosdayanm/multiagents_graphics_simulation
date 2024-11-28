@@ -52,7 +52,7 @@ class CityModel(Model):
             print("All IDs are unique.")
 
 
-    def send_stats(self, url: str = "http://localhost:5000/api/"):
+    def send_stats(self, url: str = "http://10.49.34.170:5000/api/"):
         endpoint = "validate_attempt"
 
         data = {
@@ -81,6 +81,7 @@ class CityModel(Model):
         
         if self.schedule.steps % 10 == 0:
             self.send_stats()
+
         self.schedule.step()
 
         # self.terminal_report() # Prints the metrics of the simulation on the terminal
