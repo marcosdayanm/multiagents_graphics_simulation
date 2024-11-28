@@ -46,7 +46,7 @@ with open('../map_files/2024_base.txt') as baseFile: # Getting the map dimension
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"place_cars_interval": 3}  # Interval for placing cars
+model_params = {"place_cars_interval": 1}  # Interval for placing cars
 
 print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)

@@ -10,7 +10,7 @@ from agent import *
 import json
 
 class CityModel(Model):
-    def __init__(self, place_cars_interval: int = 3):
+    def __init__(self, place_cars_interval: int = 1):
         street_graph, grid, grid_info = build_graph('../map_files/2024_base.txt') # Function that reads the map file and returns the street graph which agents will use to navigate, the string grid and some additional information, and the grid_info dictionary which contains the destination coordinates in order to select them for the agents
 
         self.width = len(grid[0]) # map dimensions

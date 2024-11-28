@@ -43,6 +43,14 @@ class Car(Agent):
         visited = set()
         visited.add(start)
         parent = {}
+            
+            
+        corners = [ # Define the map corners
+            (0, 0), 
+            (0, self.model.height - 1), 
+            (self.model.width - 1, 0), 
+            (self.model.width - 1, self.model.height - 1)
+        ]
         
         while queue: # While there are nodes to visit
             current = queue.popleft() # Get the first node in the queue
@@ -63,11 +71,15 @@ class Car(Agent):
                     previous = coord
                 return path_with_directions # Returning the path with the directions it face on every step
 
-            for neighbor in graph.get(current, []): # For every neighbor of the current node
-                if neighbor not in visited: # If the neighbor has not been visited, add is added to the visited set, to the queue and it is referenced as a child of the current node
-                    visited.add(neighbor)
-                    parent[neighbor] = current
-                    queue.append(neighbor)
+            neighbors = [
+                            neighbor for neighbor in graph.get(current, []) 
+                            if neighbor not in visited and neighbor not in corners
+                        ] # Get the neighbors of the current node that have not been visited and are not corners
+
+            for neighbor in neighbors: # For every neighbor of the current node
+                visited.add(neighbor)
+                parent[neighbor] = current
+                queue.append(neighbor)
         return None  # Path not found
     
 

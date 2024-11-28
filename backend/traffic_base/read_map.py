@@ -31,6 +31,13 @@ def build_graph(grid_file_path: str):
         'D': (0, 0),
     }
 
+    corners = [  # Define explicitly the map corners
+        (0, 0), 
+        (0, rows - 1), 
+        (cols - 1, 0), 
+        (cols - 1, rows - 1)
+    ]
+
     # Initializing the graph with each possible node on it, but without connections, for refering to neighbor graph nodes that might not be inicialized yet if this step wasn't included
     for y in range(rows):
         for x in range(cols):
@@ -51,6 +58,10 @@ def build_graph(grid_file_path: str):
             if symbol in ['>', '<', '^', 'v', 'S', 's']: # From a street, we can move to any adjacent cell that does not have an arrow pointing towards us
                 for dir_x, dir_y in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Check all neighbor cells
                     neigh_x, neigh_y = x + dir_x, y + dir_y
+
+                    # Skip outgoing connections for corners
+                    if (neigh_x, neigh_y) in corners:
+                        continue
 
                     if not (0 <= neigh_x < cols and 0 <= neigh_y < rows):
                         continue  # Neighbor out of bounds
@@ -73,10 +84,18 @@ def build_graph(grid_file_path: str):
                     if not (0 <= neigh_x < cols and 0 <= neigh_y < rows):
                         continue
 
+                    # Skip outgoing connections for corners
+                    if (neigh_x, neigh_y) in corners:
+                        continue
+
                     neighbor_symbol = grid[neigh_y][neigh_x]
                     if neighbor_symbol in ['>', '<', '^', 'v', 'S', 's']: # Adding the destination as a neighbor of the street or traffic light
                         mesa_neigh_y = rows - 1 - neigh_y
                         neighbor_position = (neigh_x, mesa_neigh_y)
                         graph[neighbor_position].append(position)
+
+    for node, neighbors in graph.items():
+        if set(neighbors).intersection(set(corners)):
+            print(f"Node {node} -> Neighbors: {neighbors}")
 
     return graph, grid, grid_info
