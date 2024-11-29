@@ -1,3 +1,8 @@
+// This code is responsible for sending requests to the agent server and handling the responses
+// Marcos Dayan Mann
+// José Manuel García Zumaya
+// 28 - Nov - 2024
+
 import {
   CarObject,
   TrafficLightObject,

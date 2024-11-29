@@ -1,3 +1,9 @@
+// This program is a combination of the client and server code for the traffic simulation,
+// using vite and WebGL to render the simulation in the browser.
+// Marcos Dayan Mann
+// José Manuel García Zumaya
+// 28 - Nov - 2024
+
 "use strict";
 
 import * as twgl from "twgl.js";

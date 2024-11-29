@@ -1,3 +1,8 @@
+// This code is responsible for defining the types of objects that are used in the simulation
+// Marcos Dayan Mann
+// José Manuel García Zumaya
+// 28 - Nov - 2024
+
 import * as twgl from "twgl.js";
 
 export class CarObject {
