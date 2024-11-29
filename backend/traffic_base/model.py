@@ -52,13 +52,14 @@ class CityModel(Model):
             print("All IDs are unique.")
 
 
-    def send_stats(self, url: str = "http://10.49.34.170:5000/api/"):
-        endpoint = "validate_attempt"
+    def send_stats(self, url: str = "http://10.49.12.55:5000/api/"):
+        # endpoint = "validate_attempt"
+        endpoint = "attempt"
 
         data = {
             "year" : 2024,
             "classroom" : 301,
-            "name" : "Equipo 3",
+            "name" : "ZUMAYAN",
             "current_cars": self.current_car_number,
             "total_arrived": self.total_cars_at_destination,
         }
@@ -79,12 +80,12 @@ class CityModel(Model):
             print("Placing cars")
             self.place_cars()
         
-        if self.schedule.steps % 10 == 0:
-            self.send_stats()
+        # if self.schedule.steps % 10 == 0:
+        #     self.send_stats()
 
         self.schedule.step()
 
-        # self.terminal_report() # Prints the metrics of the simulation on the terminal
+        self.terminal_report() # Prints the metrics of the simulation on the terminal
 
     def terminal_report(self):
         '''Prints the metrics of the simulation on the terminal.'''

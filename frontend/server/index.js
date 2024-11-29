@@ -676,7 +676,7 @@ async function drawScene(
   frameCount++;
 
   // Update the scene every 30 frames
-  if (frameCount % 10 == 0) {
+  if (frameCount % 30 == 0) {
     frameCount = 0;
     await update();
   }
